@@ -747,8 +747,10 @@ static void bq27x00_powersupply_unregister(struct bq27x00_device_info *di)
 /* If the system has several batteries we need a different name for each
  * of them...
  */
+#if 0
 static DEFINE_IDR(battery_id);
 static DEFINE_MUTEX(battery_mutex);
+#endif
 
 static int bq27x00_read_i2c(struct bq27x00_device_info *di, u8 reg, bool single)
 {
@@ -792,10 +794,15 @@ static int bq27x00_battery_probe(struct i2c_client *client,
 	int num;
 	int retval = 0;
 
+#if 0
 	/* Get new ID for the new battery device */
 	mutex_lock(&battery_mutex);
 	num = idr_alloc(&battery_id, client, 0, 0, GFP_KERNEL);
 	mutex_unlock(&battery_mutex);
+#else
+	num=0;
+#endif
+
 	if (num < 0)
 		return num;
 
@@ -832,9 +839,12 @@ batt_failed_3:
 batt_failed_2:
 	kfree(name);
 batt_failed_1:
+
+#if 0
 	mutex_lock(&battery_mutex);
 	idr_remove(&battery_id, num);
 	mutex_unlock(&battery_mutex);
+#endif
 
 	return retval;
 }
@@ -847,9 +857,11 @@ static int bq27x00_battery_remove(struct i2c_client *client)
 
 	kfree(di->bat.name);
 
+#if 0
 	mutex_lock(&battery_mutex);
 	idr_remove(&battery_id, di->id);
 	mutex_unlock(&battery_mutex);
+#endif
 
 	kfree(di);
 
