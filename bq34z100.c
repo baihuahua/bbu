@@ -81,7 +81,7 @@ struct bq27x00_access_methods {
 	int (*read)(struct bq27x00_device_info *di, u8 reg, bool single);
 };
 
-enum bq27x00_chip { BQ27000, BQ27500, BQ27425};
+enum bq27x00_chip { BQ27000, BQ27500, BQ27425, BQ34Z100 };
 
 struct bq27x00_reg_cache {
 	int temperature;
@@ -472,7 +472,9 @@ static void bq27x00_battery_poll(struct work_struct *work)
 
 	if (poll_interval > 0) {
 		/* The timer does not have to be accurate. */
+#if 0
 		set_timer_slack(&di->work.timer, poll_interval * HZ / 4);
+#endif
 		schedule_delayed_work(&di->work, poll_interval * HZ);
 	}
 }
@@ -880,12 +882,12 @@ static struct i2c_board_info i2c_board_info[] = {
 
 static inline int bq27x00_battery_i2c_init(void)
 {
+	struct i2c_adapter *adapter;
+	struct i2c_client *client;
+	
 	int ret = i2c_add_driver(&bq27x00_battery_driver);
 	if (ret)
 		printk(KERN_ERR "Unable to register BQ27x00 i2c driver\n");
-
-	struct i2c_adapter *adapter;
-	struct i2c_client *client;
 
 	adapter = i2c_get_adapter(0);
 	if (!adapter)
