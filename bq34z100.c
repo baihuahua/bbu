@@ -755,35 +755,20 @@ static DEFINE_MUTEX(battery_mutex);
 static int bq27x00_read_i2c(struct bq27x00_device_info *di, u8 reg, bool single)
 {
 	struct i2c_client *client = to_i2c_client(di->dev);
-	struct i2c_msg msg[2];
-	unsigned char data[2];
-	int ret;
+	s32 data;
 
 	if (!client->adapter)
 		return -ENODEV;
 
-	msg[0].addr = client->addr;
-	msg[0].flags = 0;
-	msg[0].buf = &reg;
-	msg[0].len = sizeof(reg);
-	msg[1].addr = client->addr;
-	msg[1].flags = I2C_M_RD;
-	msg[1].buf = data;
 	if (single)
-		msg[1].len = 1;
+		data = i2c_smbus_read_byte_data(client, reg);
 	else
-		msg[1].len = 2;
+		data = i2c_smbus_read_word_data(client, reg);
+	
+	if (data < 0)
+		return -EIO;
 
-	ret = i2c_transfer(client->adapter, msg, ARRAY_SIZE(msg));
-	if (ret < 0)
-		return ret;
-
-	if (!single)
-		ret = get_unaligned_le16(data);
-	else
-		ret = data[0];
-
-	return ret;
+	return data;
 }
 
 static int bq27x00_battery_probe(struct i2c_client *client,
