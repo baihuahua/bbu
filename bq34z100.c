@@ -40,18 +40,33 @@
 
 #define DRIVER_VERSION			"1.2.0"
 
-#define BQ27x00_REG_TEMP		0x06
+/*changed for bq34z100*/
+
+#define BQ27x00_REG_SOC			0x02
+#define BQ27x00_REG_RM			0x04
+#define BQ27x00_REG_FCC			0x06
 #define BQ27x00_REG_VOLT		0x08
-#define BQ27x00_REG_AI			0x14
-#define BQ27x00_REG_FLAGS		0x0A
-#define BQ27x00_REG_TTE			0x16
-#define BQ27x00_REG_TTF			0x18
-#define BQ27x00_REG_TTECP		0x26
-#define BQ27x00_REG_NAC			0x0C /* Nominal available capacity */
-#define BQ27x00_REG_LMD			0x12 /* Last measured discharge */
-#define BQ27x00_REG_CYCT		0x2A /* Cycle count total */
-#define BQ27x00_REG_AE			0x22 /* Available energy */
-#define BQ27x00_POWER_AVG		0x24
+#define BQ27x00_REG_AI			0x0A
+#define BQ27x00_REG_TEMP		0x0C
+#define BQ27x00_REG_FLAGS		0x0E
+
+#define BQ27x00_REG_DATE		0x6B
+#define BQ27x00_REG_NAMEL		0x6D /*0X6D */
+#define BQ27x00_REG_NAME		0x6E /* 0X6E - 0X78 */
+#define BQ27x00_REG_CHEML		0x79 /* 0X79 */
+#define BQ27x00_REG_CHEM		0x7A /*0X7A - 0X7D */
+#define BQ27x00_REG_SERNUM		0x7E
+
+
+
+#define BQ27x00_REG_TTE			0x00
+#define BQ27x00_REG_TTF			0x00
+#define BQ27x00_REG_TTECP		0x00
+#define BQ27x00_REG_NAC			0x00 /* Nominal available capacity */
+#define BQ27x00_REG_LMD			0x00 /* Last measured discharge */
+#define BQ27x00_REG_CYCT		0x00 /* Cycle count total */
+#define BQ27x00_REG_AE			0x00 /* Available energy */
+#define BQ27x00_POWER_AVG		0x00
 
 #define BQ27000_REG_RSOC		0x0B /* Relative State-of-Charge */
 #define BQ27000_REG_ILMD		0x76 /* Initial last measured discharge */
