@@ -81,19 +81,19 @@
 #define BQ27x00_REG_PCHG		0x34 /*PassedCharge */
 
 /* flags bit definitions */
-#define BQ27x00_FLAG_DSG			BIT(0)
-#define BQ27x00_FLAG_SOCF			BIT(1)
-#define BQ27x00_FLAG_SOC1			BIT(2)
-#define BQ27x00_FLAG_TDD			BIT(5)
-#define BQ27x00_FLAG_ISD			BIT(6)
-#define BQ27x00_FLAG_OCVTAKEN			BIT(7)
-#define BQ27x00_FLAG_CHG			BIT(8)
-#define BQ27x00_FLAG_FC				BIT(9)
-#define BQ27x00_FLAG_CHG_INH			BIT(11)
-#define BQ27x00_FLAG_BATLOW			BIT(12)
-#define BQ27x00_FLAG_BATHIGH			BIT(13)
-#define BQ27x00_FLAG_OTD			BIT(14)
-#define BQ27x00_FLAG_OTC			BIT(15)
+#define BQ27x00_FLAG_DSG			BIT(0) /* Discharging detected. True when set. */
+#define BQ27x00_FLAG_SOCF			BIT(1) /* State-of-Charge Threshold Final reached. True when set. */
+#define BQ27x00_FLAG_SOC1			BIT(2) /* State-of-Charge Threshold 1 reached. True when set. */
+#define BQ27x00_FLAG_TDD			BIT(5) /* Tab Disconnect is detected. True when set. */
+#define BQ27x00_FLAG_ISD			BIT(6) /* Internal Short is detected. True when set. */
+#define BQ27x00_FLAG_OCVTAKEN			BIT(7) /* Cleared on entry to relax mode and set to 1 when OCV measurement is performed in relax mode. */
+#define BQ27x00_FLAG_CHG			BIT(8) /* (Fast) charging allowed. True when set. */
+#define BQ27x00_FLAG_FC				BIT(9) /* Full-charge is detected.True when set. */
+#define BQ27x00_FLAG_CHG_INH			BIT(11) /* Charge Inhibit: unable to begin charging [Charge Inhibit Temp Low, Charge Inhibit Temp High]. True when set. */
+#define BQ27x00_FLAG_BATLOW			BIT(12) /* Battery Low bit that indicates a low battery voltage condition. */
+#define BQ27x00_FLAG_BATHIGH			BIT(13) /* Battery High bit that indicates a high battery voltage condition. */
+#define BQ27x00_FLAG_OTD			BIT(14) /* Over-Temperature in Discharge condition is detected. True when set. */
+#define BQ27x00_FLAG_OTC			BIT(15) /* Over-Temperature in Charge condition is detected. True when set. */
 
 
 #define BQ27000_REG_RSOC		0x0B /* Relative State-of-Charge */
