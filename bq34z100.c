@@ -80,6 +80,22 @@
 #define BQ27x00_REG_CHGI		0x32 /*ChargeCurrent() */
 #define BQ27x00_REG_PCHG		0x34 /*PassedCharge */
 
+/* flags bit definitions */
+#define BQ27x00_FLAG_DSG			BIT(0)
+#define BQ27x00_FLAG_SOCF			BIT(1)
+#define BQ27x00_FLAG_SOC1			BIT(2)
+#define BQ27x00_FLAG_TDD			BIT(5)
+#define BQ27x00_FLAG_ISD			BIT(6)
+#define BQ27x00_FLAG_OCVTAKEN			BIT(7)
+#define BQ27x00_FLAG_CHG			BIT(8)
+#define BQ27x00_FLAG_FC				BIT(9)
+#define BQ27x00_FLAG_CHG_INH			BIT(11)
+#define BQ27x00_FLAG_BATLOW			BIT(12)
+#define BQ27x00_FLAG_BATHIGH			BIT(13)
+#define BQ27x00_FLAG_OTD			BIT(14)
+#define BQ27x00_FLAG_OTC			BIT(15)
+
+
 #define BQ27000_REG_RSOC		0x0B /* Relative State-of-Charge */
 #define BQ27000_REG_ILMD		0x76 /* Initial last measured discharge */
 #define BQ27000_FLAG_EDVF		BIT(0) /* Final End-of-Discharge-Voltage flag */
