@@ -459,7 +459,7 @@ static int bq27x00_battery_read_health(struct bq27x00_device_info *di)
 			tval = POWER_SUPPLY_HEALTH_GOOD;
 		return tval;
 	} else {
-		if (tval & BQ27000_FLAG_EDV1)
+		if (tval & BQ27x00_FLAG_EDV1)
 			tval = POWER_SUPPLY_HEALTH_DEAD;
 		else
 			tval = POWER_SUPPLY_HEALTH_GOOD;
@@ -489,7 +489,7 @@ static void bq27x00_update(struct bq27x00_device_info *di)
 			cache.charge_full = -ENODATA;
 			cache.health = -ENODATA;
 		} else {
-			cache.capacity = bq27x00_battery_read_rsoc(di);
+			cache.capacity = bq27x00_battery_read_soc(di);
 			if (!is_bq27425) {
 				cache.energy = bq27x00_battery_read_energy(di);
 				cache.time_to_empty =
@@ -509,7 +509,7 @@ static void bq27x00_update(struct bq27x00_device_info *di)
 		if (!is_bq27425)
 			cache.cycle_count = bq27x00_battery_read_cyct(di);
 		cache.power_avg =
-			bq27x00_battery_read_pwr_avg(di, BQ27x00_POWER_AVG);
+			bq27x00_battery_read_pwr_avg(di, BQ27x00_AP);
 
 		/* We only have to read charge design full once */
 		if (di->charge_design_full <= 0)
@@ -586,7 +586,7 @@ static int bq27x00_battery_status(struct bq27x00_device_info *di,
 		else
 			status = POWER_SUPPLY_STATUS_CHARGING;
 	} else {
-		if (di->cache.flags & BQ27000_FLAG_FC)
+		if (di->cache.flags & BQ27x00_FLAG_FC)
 			status = POWER_SUPPLY_STATUS_FULL;
 		else if (di->cache.flags & BQ27000_FLAG_CHGS)
 			status = POWER_SUPPLY_STATUS_CHARGING;
@@ -616,11 +616,11 @@ static int bq27x00_battery_capacity_level(struct bq27x00_device_info *di,
 		else
 			level = POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
 	} else {
-		if (di->cache.flags & BQ27000_FLAG_FC)
+		if (di->cache.flags & BQ27x00_FLAG_FC)
 			level = POWER_SUPPLY_CAPACITY_LEVEL_FULL;
-		else if (di->cache.flags & BQ27000_FLAG_EDV1)
+		else if (di->cache.flags & BQ27x00_FLAG_EDV1)
 			level = POWER_SUPPLY_CAPACITY_LEVEL_LOW;
-		else if (di->cache.flags & BQ27000_FLAG_EDVF)
+		else if (di->cache.flags & BQ27x00_FLAG_EDVF)
 			level = POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
 		else
 			level = POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
