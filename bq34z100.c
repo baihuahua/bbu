@@ -79,6 +79,7 @@
 #define BQ27x00_REG_CHGV		0x30 /*ChargeVoltage() */
 #define BQ27x00_REG_CHGI		0x32 /*ChargeCurrent() */
 #define BQ27x00_REG_PCHG		0x34 /*PassedCharge */
+#define BQ27x00_REG_DCAP		0x3C /* Design capacity */
 
 /* flags bit definitions */
 #define BQ27x00_FLAG_DSG			BIT(0) /* Discharging detected. True when set. */
