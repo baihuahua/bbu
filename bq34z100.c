@@ -319,6 +319,8 @@ static int bq27x00_battery_read_ilmd(struct bq27x00_device_info *di)
 
 	if (bq27xxx_is_chip_version_higher(di))
 		ilmd = bq27x00_read(di, BQ27500_REG_DCAP, false);
+	else if (di->chip == BQ34Z100)
+		ilmd = bq27x00_read(di, BQ27x00_REG_DCAP, false);
 	else
 		ilmd = bq27x00_read(di, BQ27000_REG_ILMD, true);
 
