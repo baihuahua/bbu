@@ -246,6 +246,27 @@ static int bq27x00_battery_read_rsoc(struct bq27x00_device_info *di)
 }
 
 /*
+ * Return the battery State-of-Charge for bq34z100
+ * Or < 0 if something fails.
+ */
+static int bq27x00_battery_read_soc(struct bq27x00_device_info *di)
+{
+	int soc;
+
+	if (di->chip == BQ27500)
+		soc = bq27x00_read(di, BQ27500_REG_SOC, false);
+	else if (di->chip == BQ27425)
+		soc = bq27x00_read(di, BQ27425_REG_SOC, false);
+	else
+		soc = bq27x00_read(di, BQ27x00_REG_SOC, false);
+
+	if (rsoc < 0)
+		dev_dbg(di->dev, "error reading State-of-Charge\n");
+
+	return soc;
+}
+
+/*
  * Return a battery charge value in ?Ah
  * Or < 0 if something fails.
  */
