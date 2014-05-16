@@ -588,12 +588,10 @@ static int bq27x00_battery_status(struct bq27x00_device_info *di,
 	} else {
 		if (di->cache.flags & BQ27x00_FLAG_FC)
 			status = POWER_SUPPLY_STATUS_FULL;
-		else if (di->cache.flags & BQ27000_FLAG_CHGS)
-			status = POWER_SUPPLY_STATUS_CHARGING;
-		else if (power_supply_am_i_supplied(&di->bat))
-			status = POWER_SUPPLY_STATUS_NOT_CHARGING;
-		else
+		else if (di->cache.flags & BQ27x00_FLAG_DSG)
 			status = POWER_SUPPLY_STATUS_DISCHARGING;
+		else
+			status = POWER_SUPPLY_STATUS_CHARGING;
 	}
 
 	val->intval = status;
