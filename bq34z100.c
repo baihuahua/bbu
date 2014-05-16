@@ -306,7 +306,7 @@ static inline int bq27x00_battery_read_nac(struct bq27x00_device_info *di)
  */
 static inline int bq27x00_battery_read_lmd(struct bq27x00_device_info *di)
 {
-	return bq27x00_battery_read_charge(di, BQ27x00_REG_LMD);
+	return bq27x00_battery_read_charge(di, BQ27x00_REG_FCC);
 }
 
 /*
