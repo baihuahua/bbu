@@ -42,31 +42,43 @@
 
 /*changed for bq34z100*/
 
-#define BQ27x00_REG_SOC			0x02
-#define BQ27x00_REG_RM			0x04
-#define BQ27x00_REG_FCC			0x06
-#define BQ27x00_REG_VOLT		0x08
-#define BQ27x00_REG_AI			0x0A
-#define BQ27x00_REG_TEMP		0x0C
-#define BQ27x00_REG_FLAGS		0x0E
+/* normal commands*/
+#define BQ27x00_REG_SOC			0x02 /*StateOfCharge() */
+#define BQ27x00_REG_RM			0x04 /*RemainingCapacity() */
+#define BQ27x00_REG_FCC			0x06 /*FullChargeCapacity() */
+#define BQ27x00_REG_VOLT		0x08 /*Voltage() */
+#define BQ27x00_REG_AI			0x0A /*AverageCurrent() */
+#define BQ27x00_REG_TEMP		0x0C /*Temperature() */
+#define BQ27x00_REG_FLAGS		0x0E /*Flags() */
 
-#define BQ27x00_REG_DATE		0x6B
-#define BQ27x00_REG_NAMEL		0x6D /*0X6D */
-#define BQ27x00_REG_NAME		0x6E /* 0X6E - 0X78 */
-#define BQ27x00_REG_CHEML		0x79 /* 0X79 */
-#define BQ27x00_REG_CHEM		0x7A /*0X7A - 0X7D */
-#define BQ27x00_REG_SERNUM		0x7E
+#define BQ27x00_REG_DATE		0x6B /*Mfr Date */
+#define BQ27x00_REG_NAMEL		0x6D /*0X6D Mfr Name Length */
+#define BQ27x00_REG_NAME		0x6E /* 0X6E - 0X78 Mfr Name */
+#define BQ27x00_REG_CHEML		0x79 /* 0X79 Device Chemistry Length */
+#define BQ27x00_REG_CHEM		0x7A /*0X7A - 0X7D Device Chemistry */
+#define BQ27x00_REG_SERNUM		0x7E /*Serial Number */
 
 
-
-#define BQ27x00_REG_TTE			0x00
-#define BQ27x00_REG_TTF			0x00
-#define BQ27x00_REG_TTECP		0x00
-#define BQ27x00_REG_NAC			0x00 /* Nominal available capacity */
-#define BQ27x00_REG_LMD			0x00 /* Last measured discharge */
-#define BQ27x00_REG_CYCT		0x00 /* Cycle count total */
-#define BQ27x00_REG_AE			0x00 /* Available energy */
-#define BQ27x00_POWER_AVG		0x00
+/*extended commands*/
+#define BQ27x00_REG_AR			0x10 /*AtRate() */
+#define BQ27x00_REG_ARTTE		0x12 /*AtRateTimeToEmpty() */
+#define BQ27x00_REG_NAC			0x14 /* Nominal available capacity */
+#define BQ27x00_REG_FAC			0x16 /*FullAvailableCapacity() */
+#define BQ27x00_REG_TTE			0x18 /*TimeToEmpty() */
+#define BQ27x00_REG_TTF			0x1A /*TimeToFull() */
+#define BQ27x00_REG_SI			0x1C /*StandbyCurrent() */
+#define BQ27x00_REG_STTE		0x1E /*StandbyTimeToEmpty() */
+#define BQ27x00_REG_MLI			0x20 /*MaxLoadCurrent() */
+#define BQ27x00_REG_MLTTE		0x22 /*MaxLoadTimeToEmpty() */
+#define BQ27x00_REG_AE			0x24 /* Available energy */
+#define BQ27x00_REG_AP			0x26 /*AveragePower() */
+#define BQ27x00_REG_TTECP		0x28 /*TTEatConstantPower() */
+#define BQ27x00_REG_INTTEMP		0x2A /*Internal_Temp() */
+#define BQ27x00_REG_CYCT		0x2C /* Cycle count total */
+#define BQ27x00_REG_SOH			0x2E /*StateOfHealth() */
+#define BQ27x00_REG_CHGV		0x30 /*ChargeVoltage() */
+#define BQ27x00_REG_CHGI		0x32 /*ChargeCurrent() */
+#define BQ27x00_REG_PCHG		0x34 /*PassedCharge */
 
 #define BQ27000_REG_RSOC		0x0B /* Relative State-of-Charge */
 #define BQ27000_REG_ILMD		0x76 /* Initial last measured discharge */
