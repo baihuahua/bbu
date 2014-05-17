@@ -561,6 +561,7 @@ static int bq27x00_battery_get_property(struct power_supply *psy,
 		break;
 	case POWER_SUPPLY_PROP_TEMP:
 		ret = bq27x00_simple_value(di->cache.temperature, val);
+		/* change the unit into tenths of degree Celsius(0.1C)*/
 		if (ret == 0)
 			val->intval -= 2731;
 		break;
