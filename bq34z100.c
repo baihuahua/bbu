@@ -182,18 +182,6 @@ static inline int bq27x00_read(struct bq27x00_device_info *di, u8 reg,
 	return di->bus.read(di, reg, single);
 }
 
-/*
- * Higher versions of the chip like BQ27425 and BQ27500
- * differ from BQ27000 and BQ27200 in calculation of certain
- * parameters. Hence we need to check for the chip type.
- */
-static bool bq27xxx_is_chip_version_higher(struct bq27x00_device_info *di)
-{
-	if (di->chip == BQ27425 || di->chip == BQ27500)
-		return true;
-	return false;
-}
-
 
 /*
  * Return the battery State-of-Charge for bq34z100
@@ -212,7 +200,7 @@ static int bq27x00_battery_read_soc(struct bq27x00_device_info *di)
 }
 
 /*
- * Return a battery charge value in ?Ah
+ * Return a battery charge value in uAh
  * Or < 0 if something fails.
  */
 static int bq27x00_battery_read_charge(struct bq27x00_device_info *di, u8 reg)
@@ -226,16 +214,13 @@ static int bq27x00_battery_read_charge(struct bq27x00_device_info *di, u8 reg)
 		return charge;
 	}
 
-	if (bq27xxx_is_chip_version_higher(di))
-		charge *= 1000;
-	else
-		charge = charge * 3570 / BQ27000_RS;
+	charge *= 1000;
 
 	return charge;
 }
 
 /*
- * Return the battery Nominal available capaciy in ?Ah
+ * Return the battery Nominal available capaciy in uAh
  * Or < 0 if something fails.
  */
 static inline int bq27x00_battery_read_nac(struct bq27x00_device_info *di)
@@ -245,7 +230,7 @@ static inline int bq27x00_battery_read_nac(struct bq27x00_device_info *di)
 }
 
 /*
- * Return the battery Last measured discharge in ?Ah
+ * Return the battery Last measured discharge in uAh
  * Or < 0 if something fails.
  */
 static inline int bq27x00_battery_read_fcc(struct bq27x00_device_info *di)
@@ -254,7 +239,7 @@ static inline int bq27x00_battery_read_fcc(struct bq27x00_device_info *di)
 }
 
 /*
- * Return the battery Initial last measured discharge in ?Ah
+ * Return the battery Initial last measured discharge in uAh
  * Or < 0 if something fails.
  */
 static int bq27x00_battery_read_dcap(struct bq27x00_device_info *di)
@@ -268,16 +253,13 @@ static int bq27x00_battery_read_dcap(struct bq27x00_device_info *di)
 		return ilmd;
 	}
 
-	if (bq27xxx_is_chip_version_higher(di))
-		ilmd *= 1000;
-	else
-		ilmd = ilmd * 256 * 3570 / BQ27000_RS;
+	ilmd *= 1000;
 
 	return ilmd;
 }
 
 /*
- * Return the battery Available energy in ?Wh
+ * Return the battery Available energy in uWh
  * Or < 0 if something fails.
  */
 static int bq27x00_battery_read_energy(struct bq27x00_device_info *di)
@@ -289,17 +271,13 @@ static int bq27x00_battery_read_energy(struct bq27x00_device_info *di)
 		dev_dbg(di->dev, "error reading available energy\n");
 		return ae;
 	}
-
-	if (di->chip == BQ27500)
 		ae *= 1000;
-	else
-		ae = ae * 29200 / BQ27000_RS;
 
 	return ae;
 }
 
 /*
- * Return the battery temperature in tenths of degree Kelvin
+ * Return the battery temperature in tenths of degree Kelvin(Unit:0.1K)
  * Or < 0 if something fails.
  */
 static int bq27x00_battery_read_temperature(struct bq27x00_device_info *di)
@@ -312,8 +290,6 @@ static int bq27x00_battery_read_temperature(struct bq27x00_device_info *di)
 		return temp;
 	}
 
-	if (!bq27xxx_is_chip_version_higher(di))
-		temp = 5 * temp / 2;
 
 	return temp;
 }
@@ -334,7 +310,7 @@ static int bq27x00_battery_read_cyct(struct bq27x00_device_info *di)
 }
 
 /*
- * Read a time register.
+ * Read a time register.Unit:second
  * Return < 0 if something fails.
  */
 static int bq27x00_battery_read_time(struct bq27x00_device_info *di, u8 reg)
@@ -369,10 +345,7 @@ static int bq27x00_battery_read_pwr_avg(struct bq27x00_device_info *di, u8 reg)
 		return tval;
 	}
 
-	if (di->chip == BQ27500)
-		return tval;
-	else
-		return (tval * BQ27x00_POWER_CONSTANT) / BQ27000_RS;
+	return tval;
 }
 
 /*
@@ -407,7 +380,8 @@ static void bq27x00_update(struct bq27x00_device_info *di)
 
 	cache.flags = bq27x00_read(di, BQ27x00_REG_FLAGS, false);
 	if (cache.flags >= 0) {
-		if (cache.flags & BQ27000_FLAG_CI) {
+//		if (cache.flags & BQ27000_FLAG_CI) {
+		if (0) {
 			dev_info(di->dev, "battery is not calibrated! ignoring capacity values\n");
 			cache.capacity = -ENODATA;
 			cache.energy = -ENODATA;
@@ -459,7 +433,7 @@ static void bq27x00_battery_poll(struct work_struct *work)
 }
 
 /*
- * Return the battery average current in ?A
+ * Return the battery average current in uA
  * Note that current can be negative signed as well
  * Or 0 if something fails.
  */
@@ -516,7 +490,7 @@ static int bq27x00_battery_capacity_level(struct bq27x00_device_info *di,
 }
 
 /*
- * Return the battery Voltage in millivolts
+ * Return the battery Voltage in millivolts(Unit:mV/1000)
  * Or < 0 if something fails.
  */
 static int bq27x00_battery_voltage(struct bq27x00_device_info *di,
