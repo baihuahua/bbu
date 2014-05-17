@@ -261,7 +261,7 @@ static int bq27x00_battery_read_soc(struct bq27x00_device_info *di)
 	else
 		soc = bq27x00_read(di, BQ27x00_REG_SOC, false);
 
-	if (rsoc < 0)
+	if (soc < 0)
 		dev_dbg(di->dev, "error reading State-of-Charge\n");
 
 	return soc;
@@ -450,16 +450,16 @@ static int bq27x00_battery_read_health(struct bq27x00_device_info *di)
 		return tval;
 	}
 
-	if ((di->chip == BQ27500)) {
-		if (tval & BQ27500_FLAG_SOCF)
+	if ((di->chip == BQ34Z100)) {
+		if (tval & BQ27x00_FLAG_SOCF)
 			tval = POWER_SUPPLY_HEALTH_DEAD;
-		else if (tval & BQ27500_FLAG_OTC)
+		else if (tval & BQ27x00_FLAG_OTC)
 			tval = POWER_SUPPLY_HEALTH_OVERHEAT;
 		else
 			tval = POWER_SUPPLY_HEALTH_GOOD;
 		return tval;
 	} else {
-		if (tval & BQ27x00_FLAG_EDV1)
+		if (tval & BQ27000_FLAG_EDV1)
 			tval = POWER_SUPPLY_HEALTH_DEAD;
 		else
 			tval = POWER_SUPPLY_HEALTH_GOOD;
@@ -509,7 +509,7 @@ static void bq27x00_update(struct bq27x00_device_info *di)
 		if (!is_bq27425)
 			cache.cycle_count = bq27x00_battery_read_cyct(di);
 		cache.power_avg =
-			bq27x00_battery_read_pwr_avg(di, BQ27x00_AP);
+			bq27x00_battery_read_pwr_avg(di, BQ27x00_REG_AP);
 
 		/* We only have to read charge design full once */
 		if (di->charge_design_full <= 0)
@@ -604,21 +604,21 @@ static int bq27x00_battery_capacity_level(struct bq27x00_device_info *di,
 {
 	int level;
 
-	if (bq27xxx_is_chip_version_higher(di)) {
-		if (di->cache.flags & BQ27500_FLAG_FC)
+	if (di->chip == BQ34Z100) {
+		if (di->cache.flags & BQ27x00_FLAG_FC)
 			level = POWER_SUPPLY_CAPACITY_LEVEL_FULL;
-		else if (di->cache.flags & BQ27500_FLAG_SOC1)
+		else if (di->cache.flags & BQ27x00_FLAG_SOC1)
 			level = POWER_SUPPLY_CAPACITY_LEVEL_LOW;
-		else if (di->cache.flags & BQ27500_FLAG_SOCF)
+		else if (di->cache.flags & BQ27x00_FLAG_SOCF)
 			level = POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
 		else
 			level = POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
 	} else {
 		if (di->cache.flags & BQ27x00_FLAG_FC)
 			level = POWER_SUPPLY_CAPACITY_LEVEL_FULL;
-		else if (di->cache.flags & BQ27x00_FLAG_EDV1)
+		else if (di->cache.flags & BQ27000_FLAG_EDV1)
 			level = POWER_SUPPLY_CAPACITY_LEVEL_LOW;
-		else if (di->cache.flags & BQ27x00_FLAG_EDVF)
+		else if (di->cache.flags & BQ27000_FLAG_EDVF)
 			level = POWER_SUPPLY_CAPACITY_LEVEL_CRITICAL;
 		else
 			level = POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
