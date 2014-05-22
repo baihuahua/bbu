@@ -376,9 +376,12 @@ static int bq27x00_battery_read_health(struct bq27x00_device_info *di)
 }
 /* FIXME:we should take care of the flags here.*/
 
+/*we should put cache here as a gloable variable to share it with proc read function.
+ * and may be should add a lock to access it serially.*/
+struct bq27x00_reg_cache cache = {0, };
+
 static void bq27x00_update(struct bq27x00_device_info *di)
 {
-	struct bq27x00_reg_cache cache = {0, };
 
 	cache.flags = bq27x00_read(di, BQ27x00_REG_FLAGS, false);
 	if (cache.flags >= 0) {
@@ -776,10 +779,7 @@ bbu_read_proc(char *buffer, char **start, off_t offset, int size, int *eof,
 {
         int len = 0; /* Don't include the null byte. */
 	char *p = buffer;
-	struct bq27x00_device_info di;
-	struct bq27x00_reg_cache cache = {0, };
 
-	cache.flags = bq27x00_read(&di, BQ27x00_REG_FLAGS, false);
 	if (cache.flags >= 0) {
 		cache.health = bq27x00_battery_read_health(&di);
 		cache.temperature = bq27x00_battery_read_temperature(&di);
