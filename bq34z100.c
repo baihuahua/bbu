@@ -26,6 +26,7 @@
  */
 
 #include <linux/module.h>
+#include <linux/proc_fs.h>
 #include <linux/param.h>
 #include <linux/jiffies.h>
 #include <linux/workqueue.h>
@@ -768,6 +769,66 @@ static int bq27x00_battery_remove(struct i2c_client *client)
 	return 0;
 }
 
+static int
+bbu_read_proc(char *buffer, char **start, off_t offset, int size, int *eof,
+                void *data)
+{
+        int len = 0; /* Don't include the null byte. */
+	char *p = buffer;
+	struct bq27x00_device_info di;
+	struct bq27x00_reg_cache cache = {0, };
+
+	cache.flags = bq27x00_read(&di, BQ27x00_REG_FLAGS, false);
+	if (cache.flags >= 0) {
+		cache.health = bq27x00_battery_read_health(&di);
+		cache.temperature = bq27x00_battery_read_temperature(&di);
+		cache.capacity = bq27x00_battery_read_soc(&di);
+		cache.time_to_empty = bq27x00_battery_read_time(&di,BQ27x00_REG_TTE);
+	
+	}
+
+    	p += sprintf(p,
+                     "Manufacturer\t: Kedacom\n"
+                     "SN\t: 2593SMP001\n"
+                     "Technology\t: Li-ion\n"
+                     "Health\t: %s\n"
+                     "Temperature\t: %s\n"
+                     "Level\t: %s\%\n"
+                     "TimeRemaining\t: %ss\n"
+		     "Status\t: %s\n"
+                     "DataToFlush\t: 100M\n",
+		      cache.health,
+		      cache.temperature,
+		      cache.capacity,
+		      cache.time_to_empty,
+		      1 ? "okay" : "dead");
+
+        len = p - buffer;
+
+        /*
+         * We only support reading the whole string at once.
+         */
+        if (size < len)
+                return -EINVAL;
+        /*
+         * If file position is non-zero, then assume the string has
+         * been read and indicate there is no more data to be read.
+         */
+        if (offset != 0)
+                return 0;
+        /*
+         * We know the buffer is big enough to hold the string.
+         */
+        /*
+         * Signal EOF.
+         */
+        *eof = 1;
+
+        return len;
+
+}
+
+
 static const struct i2c_device_id bq27x00_id[] = {
 	{ "bq27200", BQ27000 },	/* bq27200 is same as bq27000, but with i2c */
 	{ "bq27500", BQ27500 },
@@ -804,11 +865,21 @@ static inline int bq27x00_battery_i2c_init(void)
 	adapter = i2c_get_adapter(0);
 	if (!adapter)
 		return -ENODEV;
+
 	client = i2c_new_device(adapter, i2c_board_info);
 
 	i2c_put_adapter(adapter);
+
 	if (!client)
 		return -ENODEV;
+
+        if (create_proc_read_entry("bbu", 0, NULL, bbu_read_proc,
+                                    NULL) == 0) {
+                printk(KERN_ERR
+                       "Unable to register \"bbu\" proc file\n");
+                
+		return -ENOMEM;
+        }
 
 	return ret;
 }
