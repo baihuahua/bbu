@@ -324,9 +324,10 @@ static int bq27x00_battery_read_time(struct bq27x00_device_info *di, u8 reg)
 			reg, tval);
 		return tval;
 	}
-
-	if (tval == 65535)
-		return -ENODATA;
+	/*when the battery is not discharging, tval should be 65535 and should
+		be not return error. */
+	//if (tval == 65535)
+	//	return -ENODATA;
 
 	return tval * 60;
 }
