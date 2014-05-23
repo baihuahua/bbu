@@ -168,7 +168,7 @@ static enum power_supply_property bq27x00_battery_props[] = {
 };
 
 
-static unsigned int poll_interval = 360;
+static unsigned int poll_interval = 60;
 module_param(poll_interval, uint, 0644);
 MODULE_PARM_DESC(poll_interval, "battery poll interval in seconds - " \
 				"0 disables polling");
@@ -881,10 +881,11 @@ static struct i2c_board_info i2c_board_info[] = {
 	},
 };
 
+struct i2c_client *client;
+
 static inline int bq27x00_battery_i2c_init(void)
 {
 	struct i2c_adapter *adapter;
-	struct i2c_client *client;
 	
 	int ret = i2c_add_driver(&bq27x00_battery_driver);
 	if (ret)
@@ -902,7 +903,7 @@ static inline int bq27x00_battery_i2c_init(void)
 		return -ENODEV;
 
         if (create_proc_read_entry("bbu", 0, NULL, bbu_read_proc,
-                                    NULL) == 0) {
+                                    NULL) == 0){
                 printk(KERN_ERR
                        "Unable to register \"bbu\" proc file\n");
                 
@@ -915,6 +916,8 @@ static inline int bq27x00_battery_i2c_init(void)
 static inline void bq27x00_battery_i2c_exit(void)
 {
 	i2c_del_driver(&bq27x00_battery_driver);
+	i2c_unregister_device(client);
+	remove_proc_entry("bbu", NULL);
 }
 
 /*
