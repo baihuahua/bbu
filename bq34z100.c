@@ -772,6 +772,17 @@ static int bq27x00_battery_remove(struct i2c_client *client)
 
 	return 0;
 }
+static char *health_str[] = {
+	"Dead",
+	"Overheat",
+	"Good"
+};
+
+static char *status_str[] = {
+	"Full",
+	"Discharging",
+	"Charging"
+};
 
 static int
 bbu_read_proc(char *buffer, char **start, off_t offset, int size, int *eof,
@@ -779,30 +790,46 @@ bbu_read_proc(char *buffer, char **start, off_t offset, int size, int *eof,
 {
         int len = 0; /* Don't include the null byte. */
 	char *p = buffer;
+	int health = 0,status = 0;
 
 	if (cache.flags >= 0) {
-		cache.health = bq27x00_battery_read_health(&di);
-		cache.temperature = bq27x00_battery_read_temperature(&di);
-		cache.capacity = bq27x00_battery_read_soc(&di);
-		cache.time_to_empty = bq27x00_battery_read_time(&di,BQ27x00_REG_TTE);
-	
+		if (cache.flags & BQ27x00_FLAG_SOCF)
+		//	health = POWER_SUPPLY_HEALTH_DEAD;i
+			health = 0;
+		else if (cache.flags & BQ27x00_FLAG_OTC)
+		//	health = POWER_SUPPLY_HEALTH_OVERHEAT;
+			health = 1;
+		else
+		//	health = POWER_SUPPLY_HEALTH_GOOD;
+			health = 2;
+
+		if (cache.flags & BQ27x00_FLAG_FC)
+		//	status = POWER_SUPPLY_STATUS_FULL;
+			status = 0;
+		else if (cache.flags & BQ27x00_FLAG_DSG)
+		//	status = POWER_SUPPLY_STATUS_DISCHARGING;
+			status = 1;
+		else
+		//	status = POWER_SUPPLY_STATUS_CHARGING;
+			status = 2;
 	}
 
     	p += sprintf(p,
-                     "Manufacturer\t: Kedacom\n"
-                     "SN\t: 2593SMP001\n"
-                     "Technology\t: Li-ion\n"
-                     "Health\t: %s\n"
-                     "Temperature\t: %s\n"
-                     "Level\t: %s\%\n"
-                     "TimeRemaining\t: %ss\n"
-		     "Status\t: %s\n"
-                     "DataToFlush\t: 100M\n",
-		      cache.health,
-		      cache.temperature,
+                     "Manufacturer:\t Kedacom\n"
+                     "SN:\t\t 2593SMP001\n"
+                     "Technology:\t Li-ion\n"
+                     "Health:\t\t %s\n"
+                     "Temperature:\t %d.%d\n"
+                     "Level:\t\t %d\%\n"
+                     "TimeRemaining:\t %ds\n"
+		     "Status:\t\t %s\n"
+                     "DataToFlush:\t 100M\n",
+		      health_str[health],
+		      (cache.temperature-2731)/10,
+		      (cache.temperature-2731)%10,
 		      cache.capacity,
 		      cache.time_to_empty,
-		      1 ? "okay" : "dead");
+		      status_str[status]);
 
         len = p - buffer;
 
