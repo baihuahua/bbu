@@ -675,7 +675,7 @@ static DEFINE_MUTEX(battery_mutex);
 static int bq27x00_read_i2c(struct bq27x00_device_info *di, u8 reg, bool single)
 {
 	struct i2c_client *client = to_i2c_client(di->dev);
-	s32 data;
+	s32 data = 0;
 
 	if (!client->adapter)
 		return -ENODEV;
@@ -781,7 +781,10 @@ static char *health_str[] = {
 static char *status_str[] = {
 	"Full",
 	"Discharging",
-	"Charging"
+	"Charging",
+	"No Battery",
+	"Battery",
+	"AC"
 };
 
 static int
@@ -792,11 +795,13 @@ bbu_read_proc(char *buffer, char **start, off_t offset, int size, int *eof,
 	char *p = buffer;
 	int health = 0,status = 0;
 
+/*bq34z100 is powered by battery,so when battery is absent,the communication with bq34z100
+ * will be error and cache.flags will be set a negative value in bq27x00_read_i2c fuction. */
 	if (cache.flags >= 0) {
 		if (cache.flags & BQ27x00_FLAG_SOCF)
-		//	health = POWER_SUPPLY_HEALTH_DEAD;i
+		//	health = POWER_SUPPLY_HEALTH_DEAD;
 			health = 0;
-		else if (cache.flags & BQ27x00_FLAG_OTC)
+		else if (cache.flags & (BQ27x00_FLAG_OTC | BQ27x00_FLAG_OTD))
 		//	health = POWER_SUPPLY_HEALTH_OVERHEAT;
 			health = 1;
 		else
@@ -805,14 +810,19 @@ bbu_read_proc(char *buffer, char **start, off_t offset, int size, int *eof,
 
 		if (cache.flags & BQ27x00_FLAG_FC)
 		//	status = POWER_SUPPLY_STATUS_FULL;
-			status = 0;
+		//	status = 0;
+			status = 5;
 		else if (cache.flags & BQ27x00_FLAG_DSG)
 		//	status = POWER_SUPPLY_STATUS_DISCHARGING;
-			status = 1;
+		//	status = 0;
+			status = 4;
 		else
 		//	status = POWER_SUPPLY_STATUS_CHARGING;
-			status = 2;
+		//	status = 0;
+			status = 5;
 	}
+	else
+		status = 3;
 
     	p += sprintf(p,
                      "Manufacturer:\t Kedacom\n"
@@ -918,6 +928,8 @@ static inline void bq27x00_battery_i2c_exit(void)
 	i2c_del_driver(&bq27x00_battery_driver);
 	i2c_unregister_device(client);
 	remove_proc_entry("bbu", NULL);
+	
+	printk("BBU driver exit.\n");
 }
 
 /*
