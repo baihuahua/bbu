@@ -772,13 +772,13 @@ static int bq27x00_battery_remove(struct i2c_client *client)
 
 	return 0;
 }
-static char *health_str[] = {
+static const char *health_str[] = {
 	"Dead",
 	"Overheat",
 	"Good"
 };
 
-static char *status_str[] = {
+static const char *status_str[] = {
 	"Full",
 	"Discharging",
 	"Charging",
@@ -891,7 +891,7 @@ static struct i2c_board_info i2c_board_info[] = {
 	},
 };
 
-struct i2c_client *client;
+static struct i2c_client *client;
 
 static inline int bq27x00_battery_i2c_init(void)
 {
