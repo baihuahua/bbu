@@ -44,6 +44,7 @@
 /*changed for bq34z100*/
 
 /* normal commands*/
+#define BQ27x00_REG_CTRL		0x00 /*Control() */
 #define BQ27x00_REG_SOC			0x02 /*StateOfCharge() */
 #define BQ27x00_REG_RM			0x04 /*RemainingCapacity() */
 #define BQ27x00_REG_FCC			0x06 /*FullChargeCapacity() */
@@ -100,6 +101,15 @@
 
 #define BQ27000_FLAG_CI			BIT(4) /* Capacity Inaccurate flag */
 
+/*control command*/
+#define CONTROL_CMD			BQ27x00_REG_CTRL
+
+/*Control subcommand*/
+#define DEV_TYPE_SUBCMD                 0x0001
+#define FW_VER_SUBCMD                   0x0002
+#define DF_VER_SUBCMD                   0x000C
+#define ITENABLE_SUBCMD                 0x0021
+#define RESET_SUBCMD                    0x0041
 
 
 #define BQ27000_RS			20 /* Resistor sense */
@@ -108,6 +118,8 @@
 struct bq27x00_device_info;
 struct bq27x00_access_methods {
 	int (*read)(struct bq27x00_device_info *di, u8 reg, bool single);
+        int (*write)(struct bq27x00_device_info *di, u8 reg, u16 value,
+                     bool single);
 };
 
 enum bq27x00_chip { BQ27000, BQ27500, BQ27425, BQ34Z100 };
@@ -181,6 +193,12 @@ static inline int bq27x00_read(struct bq27x00_device_info *di, u8 reg,
 		bool single)
 {
 	return di->bus.read(di, reg, single);
+}
+
+static inline int bq27x00_write(struct bq27x00_device_info *di, u8 reg,
+                u16 value, bool single)
+{
+        return di->bus.write(di, reg, value, single);
 }
 
 
@@ -691,6 +709,153 @@ static int bq27x00_read_i2c(struct bq27x00_device_info *di, u8 reg, bool single)
 	return data;
 }
 
+static int bq27x00_write_i2c(struct bq27x00_device_info *di, u8 reg, u16 value, bool single)
+{
+        struct i2c_client *client = to_i2c_client(di->dev);
+        int ret;
+
+	if (!client->adapter)
+                return -ENODEV;
+
+        if (single)
+                ret = i2c_smbus_write_byte_data(client, reg, value);
+        else
+                ret = i2c_smbus_write_word_data(client, reg, value);
+
+        if (ret < 0)
+                return -EIO;
+
+	return 0;
+
+}
+
+static int bq27x00_battery_reset(struct bq27x00_device_info *di)
+{
+
+         dev_info(di->dev, "Gas Gauge Reset\n");
+ 
+         if(bq27x00_write(di, BQ27x00_REG_CTRL, RESET_SUBCMD, false) < 0)
+		dev_err(di->dev, "Gas Gauge Reset error.\n");
+ 
+         msleep(10);
+ 
+         return 0;
+}
+
+
+static int bq27x00_battery_enable_it(struct bq27x00_device_info *di)
+{
+
+         dev_info(di->dev, "Goint to enable IT.\n");
+ 
+         if(bq27x00_write(di, BQ27x00_REG_CTRL, ITENABLE_SUBCMD, false) < 0)
+		dev_err(di->dev, "IT enable error.\n");
+ 
+         msleep(10);
+ 
+         return 0;
+}
+
+static int bq27x00_battery_read_fw_version(struct bq27x00_device_info *di)
+{
+	bq27x00_write_i2c(di, CONTROL_CMD, FW_VER_SUBCMD, false);
+
+	msleep(10);
+
+	return bq27x00_read_i2c(di, CONTROL_CMD, false);
+}
+
+static int bq27x00_battery_read_device_type(struct bq27x00_device_info *di)
+{
+	bq27x00_write_i2c(di, CONTROL_CMD, DEV_TYPE_SUBCMD, false);
+
+	msleep(10);
+
+	return bq27x00_read_i2c(di, CONTROL_CMD, false);
+}
+
+static int bq27x00_battery_read_dataflash_version(struct bq27x00_device_info *di)
+{
+	bq27x00_write_i2c(di, CONTROL_CMD, DF_VER_SUBCMD, false);
+
+	msleep(10);
+
+	return bq27x00_read_i2c(di, CONTROL_CMD, false);
+}
+
+static ssize_t show_firmware_version(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	struct bq27x00_device_info *di = dev_get_drvdata(dev);
+	int ver;
+
+	ver = bq27x00_battery_read_fw_version(di);
+
+	return sprintf(buf, "%d\n", ver);
+}
+
+static ssize_t show_dataflash_version(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	struct bq27x00_device_info *di = dev_get_drvdata(dev);
+	int ver;
+
+	ver = bq27x00_battery_read_dataflash_version(di);
+
+	return sprintf(buf, "%d\n", ver);
+}
+
+static ssize_t show_device_type(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	struct bq27x00_device_info *di = dev_get_drvdata(dev);
+	int dev_type;
+
+	dev_type = bq27x00_battery_read_device_type(di);
+
+	return sprintf(buf, "%d\n", dev_type);
+}
+
+static ssize_t show_reset(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	struct bq27x00_device_info *di = dev_get_drvdata(dev);
+
+	bq27x00_battery_reset(di);
+
+	return sprintf(buf, "okay\n");
+}
+
+
+static ssize_t show_it_enable(struct device *dev,
+		struct device_attribute *attr, char *buf)
+{
+	struct bq27x00_device_info *di = dev_get_drvdata(dev);
+
+	bq27x00_battery_enable_it(di);
+
+	return sprintf(buf, "it enabled\n");
+}
+
+static DEVICE_ATTR(fw_version, S_IRUGO, show_firmware_version, NULL);
+static DEVICE_ATTR(df_version, S_IRUGO, show_dataflash_version, NULL);
+static DEVICE_ATTR(device_type, S_IRUGO, show_device_type, NULL);
+static DEVICE_ATTR(reset, S_IRUGO, show_reset, NULL);
+static DEVICE_ATTR(it_enable, S_IRUGO, show_it_enable, NULL);
+
+static struct attribute *bq27x00_attributes[] = {
+	&dev_attr_fw_version.attr,
+	&dev_attr_df_version.attr,
+	&dev_attr_device_type.attr,
+	&dev_attr_reset.attr,
+	&dev_attr_it_enable.attr,
+	NULL
+};
+
+static const struct attribute_group bq27x00_attr_group = {
+	.attrs = bq27x00_attributes,
+};
+
 static int bq27x00_battery_probe(struct i2c_client *client,
 				 const struct i2c_device_id *id)
 {
@@ -730,12 +895,29 @@ static int bq27x00_battery_probe(struct i2c_client *client,
 	di->chip = id->driver_data;
 	di->bat.name = name;
 	di->bus.read = &bq27x00_read_i2c;
+	di->bus.write = &bq27x00_write_i2c;
 
 	retval = bq27x00_powersupply_init(di);
 	if (retval)
 		goto batt_failed_3;
 
 	i2c_set_clientdata(client, di);
+/*
+	bq27x00_battery_reset(di);
+	msleep(10);
+	bq27x00_battery_enable_it(di);
+	msleep(10);
+*/	
+
+	dev_info(&client->dev,
+			"Gas Guage fw version 0x%04x; df version 0x%04x\n",
+			bq27x00_battery_read_fw_version(di), bq27x00_battery_read_dataflash_version(di));
+
+	retval = sysfs_create_group(&client->dev.kobj, &bq27x00_attr_group);
+	if (retval)
+		dev_err(&client->dev, "could not create sysfs files\n");
+
+
 
 	return 0;
 
