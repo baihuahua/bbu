@@ -1083,7 +1083,7 @@ static inline int bq27x00_battery_i2c_init(void)
 	if (ret)
 		printk(KERN_ERR "Unable to register BQ27x00 i2c driver\n");
 
-	adapter = i2c_get_adapter(0);
+	adapter = i2c_get_adapter(9);
 	if (!adapter)
 		return -ENODEV;
 
